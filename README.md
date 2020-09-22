@@ -26,3 +26,9 @@
    repo:
    - [https://github.com/JetRunner/BERT-of-Theseus](https://github.com/JetRunner/BERT-of-Theseus)
    - [https://github.com/bojone/bert-of-theseus](https://github.com/bojone/bert-of-theseus)
+   
+ - 4.利用不同样本预测的难易程度不同，来动态选择模型的branch classifier，不过由于tensorflow1.X 是静态图，所以当前实现的
+ demo实际上并不会真的提前结束计算，具体内容请查阅：[knowledge_distillation_fastbert](https://github.com/xv44586/Knowledge-Distillation-NLP/knowledge_distillation_fastbert.py)
+ 
+ 论文：
+ - [FastBERT: a Self-distilling BERT with Adaptive Inference Time](http://arxiv.org/abs/2004.02178)
