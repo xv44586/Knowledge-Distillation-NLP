@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Date    : 2020/9/22
 # @Author  : mingming.xu
-# @Email   : mingming.xu@zhaopin.com
+# @Email   : xv44586@gmail.com
 # @File    : knowledge_distillation_fastbert.py
-# -*- coding: utf-8 -*-
-# @Date    : 2020/9/18
-# @Author  : mingming.xu
-# @Email   : mingming.xu@zhaopin.com
-# @File    : classification_ifytek_fastbert.py
 """
 借鉴fastbert 的思想：对不同样本选择不同的Transformer 层进行预测，来达到提前结束计算，加速推理。
 实验时发现，由于没有大量unlabel data，只利用Teacher model outputs进行迁移，效果非常差，所以选择迁移时对每个
