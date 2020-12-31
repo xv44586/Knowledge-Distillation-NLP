@@ -11,7 +11,13 @@
 实验：中文文本分类
 数据集：IFLYTEK' 长文本分类 (https://github.com/CLUEbenchmark/CLUE)
 bert-12: 60.21%
-student-3: 60.14%
+student-3: 58.14%
+teacher-student:60.14%
+student-3-self-kd: 59.6%
+teacher-12-self-kd:61.07%
+normal-noise-bert-3:58.4%
+
+blog: [distilling knowledge of bert](https://xv44586.github.io/2020/08/31/bert-01/)
 
 ref:
   - [Distilling the Knowledge in a Neural Network](http://arxiv.org/abs/1503.02531)
@@ -72,9 +78,9 @@ class DataGenerator(DataGenerator):
     """数据生成器
     """
 
-    def __iter__(self):
+    def __iter__(self, shuffle=False):
         batch_token_ids, batch_segment_ids, batch_labels = [], [], []
-        for is_end, (text, label) in self.get_sample():
+        for is_end, (text, label) in self.get_sample(shuffle):
             token_ids, segment_ids = tokenizer.encode(text, maxlen=maxlen)
             batch_token_ids.append(token_ids)
             batch_segment_ids.append(segment_ids)
@@ -153,9 +159,9 @@ class StudentDataGenerator(DataGenerator):
     """数据生成器
     """
 
-    def __iter__(self):
+    def __iter__(self, shuffle=False):
         batch_token_ids, batch_segment_ids, batch_labels, batch_logits = [], [], [], []
-        for is_end, (text, label, logits) in self.get_sample():
+        for is_end, (text, label, logits) in self.get_sample(shuffle):
             token_ids, segment_ids = tokenizer.encode(text, maxlen=maxlen)
             batch_token_ids.append(token_ids)
             batch_segment_ids.append(segment_ids)
@@ -187,9 +193,11 @@ student_model = Model(student.inputs, s_soften)
 
 s_logits_t = Lambda(lambda x: x / Temperature)(s_logits)
 s_logits_t = Activation(activation='softmax')(s_logits_t)
-
+# soften_logits = concatenate([s_soften, s_logits_t])
+# student_train = Model(student.inputs, soften_logits)
 
 student_train = Model(student.inputs, [s_soften, s_logits_t])
+
 student_train.summary()
 
 
@@ -225,8 +233,12 @@ if __name__ == '__main__':
     y_soften = K.softmax(y_train_logits / Temperature).numpy()
     new_y_train = np.concatenate([y_train, y_soften], axis=-1)
 
+    # create normal noise fake soften labels datasets
+    # new_data = [[d[0], d[1], normal_noise(d[1])] for d in train_data]
+    # student_data_generator = StudentDataGenerator(new_data, batch_size)
+
     # create new datasets
-    new_data = [[d[0], d[1], y_train_logits[i].tolist()] for i, d in enumerate(train_data)]
+    new_data = [[d[0], d[1], y_soften[i].tolist()] for i, d in enumerate(train_data)]
     student_data_generator = StudentDataGenerator(new_data, batch_size)
 
     # check soften labels accuracy
